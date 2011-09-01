@@ -1,0 +1,101 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+psst - prompt string setting tool
+
+=head1 SYNOPSIS
+
+In F<~/.bashrc> add
+
+ # XXX: set up PATH and PERL5LIB as necessary
+ 
+ # Set shell and environment variables and create a function for
+ # prompt updating
+ eval "$( psst "$PS1" )"
+
+Then use L<local::lib> as normal, by whatever means.
+
+=head1 GOALS
+
+This script is intended to run during the login profile.  It ought to
+be reliable and failsafe, lightweight and require minimal early
+configuration.
+
+=head1 CAVEATS
+
+Author reserves the right to turn this into the Portable Sanity
+Support Tool by adding other subcommands.  A symlink-farm in F<~/bin/>
+is a likely next target.
+
+=cut
+
+
+sub main {
+  syntax() if "@ARGV" =~ /^(--help|-h)\b/ || !@ARGV;
+
+  my $subcmd = shift @ARGV;
+  if ($subcmd eq 'prompt') {
+    die "$0 prompt: takes one optional parameter, got ".@ARGV if @ARGV > 1;
+    my $old_ps1 = base_prompt(PS1 => @ARGV);
+    print prompt_set($old_ps1);
+  } else {
+    die "Unknown subcommand '$subcmd'\n";
+  }
+}
+
+
+sub syntax {
+  die <<"MSG";
+Syntax: $0 prompt [ "old prompt string" ]
+
+Emits to STDOUT a text munging function and a new definition for \$PS1
+
+The old prompt string is not required if it can be recovered by other
+means,
+ - from the environment, by export of some other variable made by psst
+ - from the configuration file
+ - from the environment, by export PS1; trimming off what we added before
+
+These are taken in priority order.
+
+MSG
+}
+
+sub base_prompt {
+  my ($key, $arg_var) = @_;
+  my $out;
+
+  # 4. shell variable, if exported
+  $out = prompt_strip($key, $ENV{$key}) if defined $ENV{$key};
+
+  # 3. config file.  YAGNI.
+
+  # 2. environment we exported.  YAGNI.
+
+  # 1. given parameter
+  $out = $arg_var if defined $arg_var;
+
+  die "Cannot recover old prompt string $key, please supply it\n"
+    unless defined $out;
+
+  return $out;
+}
+
+sub prompt_strip {
+  my ($key, $val) = @_;
+  if ($val =~ /PERL_LOCAL_LIB_ROOT/) {
+    return (); # XXX: removing our extra stuff is not implemented
+  } else {
+    return $val;
+  }
+}
+
+main();
+
+# local lib names,
+# s/dir/name patterns held in bash env
+# updating needed to abbreviate the new

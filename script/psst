@@ -40,8 +40,8 @@ sub main {
   my $subcmd = shift @ARGV;
   if ($subcmd eq 'prompt') {
     die "$0 prompt: takes one optional parameter, got ".@ARGV if @ARGV > 1;
-    my $old_ps1 = base_prompt(PS1 => @ARGV);
-    print prompt_set($old_ps1);
+    my $old_ps1 = prompt_base(PS1 => @ARGV);
+    print prompt_set(PS1 => $old_ps1);
   } else {
     die "Unknown subcommand '$subcmd'\n";
   }
@@ -65,7 +65,8 @@ These are taken in priority order.
 MSG
 }
 
-sub base_prompt {
+
+sub prompt_base {
   my ($key, $arg_var) = @_;
   my $out;
 
@@ -92,6 +93,64 @@ sub prompt_strip {
   } else {
     return $val;
   }
+}
+
+sub prompt_set {
+  my ($key, $base) = @_;
+
+  my @out;
+  push @out, <<'TXT';
+_psst_format() {
+  local out esc
+
+  # Homedir replacement
+  out="${PERL_LOCAL_LIB_ROOT//~/~}"
+TXT
+
+  my @substs; # XXX: needs config
+  if (@substs) {
+    push @out, qq{\n  # Name substitutions\n};
+    foreach my $subst (@substs) {
+      my ($match, $replace) = @$subst;
+      $match =~ s{([\/#%])}{\$1}g;
+      push @out, qq{  out="\${out//$match/$replace}"\n};
+    }
+  }
+
+  push @out, <<'TXT';
+  esc=$( echo -e "\e" )
+  out="${out//:/ $esc[36m:$esc[32m }"
+  printf "%s" "$out"
+}
+# Calling this from PS1 is done by pipes & clone(2) i.e. subshell in
+# its own process.  It seems to be the only way to nest substitutions.
+# We don't call it unless PERL_LOCAL_LIB_ROOT is set.
+
+TXT
+
+  $base =~ s{'}{'"'"'}g;
+  push @out, <<"TXT";
+
+### Prefix the prompt with local::lib indicator
+#
+# First, reset to default prompt
+PS1='$base'
+TXT
+
+  push @out, <<'TXT';
+#
+# Then prefix with indicator pokery
+PS1='${PERL_LOCAL_LIB_ROOT:+\[\e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m$( _psst_format )\e8\e[32m\]LL)\[\e[0m\] }'"$PS1"
+
+TXT
+
+# Another option would be a minimal "LL) " indicator, plus a quick "What PERL_LOCAL_LIB_ROOT do I have?" command.
+#
+#   /etc/profile gives '\u@\h:\w\$ '
+#   /etc/skel/.bashrc and /etc/bash.bashrc give assorted debian_chroot indicators
+#   /etc/bash_completion.d/git.dpkg-dist has recommendations for Git
+
+  return join '', @out;
 }
 
 main();

@@ -1,0 +1,33 @@
+=head1 NAME
+
+psst - prompt string setting tool
+
+=head1 DESCRIPTION
+
+Set-once configuration for F<~/.bashrc> to show presence of
+C<$PERL_LOCAL_LIB_ROOT>.
+
+=head2 Origin
+
+I wrote a L<local::lib>-based installer for a small project.
+
+I added the obligatory "set up the environment and start a shell in
+there" script.
+
+I wanted the new subshell to be clearly marked as with its local::lib
+environment, and decided that this functionality doesn't belong in the
+small project.
+
+=head2 Intentions
+
+Polish it a little to make a small CPAN-installable package.  Install
+in all my $HOMEs.
+
+=head1 AUTHOR
+
+Copyright 2011 by Matthew Astley L<http://www.t8o.org/~mca1001/>
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+
 =head1 NAME
 
 psst - prompt string setting tool
@@ -15,7 +16,7 @@ In F<~/.bashrc> add
  
  # Set shell and environment variables and create a function for
  # prompt updating
- eval "$( psst "$PS1" )"
+ eval "$( psst prompt "$PS1" )"
 
 Then use L<local::lib> as normal, by whatever means.
 
@@ -107,17 +108,19 @@ _psst_format() {
   out="${PERL_LOCAL_LIB_ROOT//~/~}"
 TXT
 
-  my @substs; # XXX: needs config
+  my @substs = @{ config($key.'_substs', []) };
   if (@substs) {
     push @out, qq{\n  # Name substitutions\n};
     foreach my $subst (@substs) {
       my ($match, $replace) = @$subst;
-      $match =~ s{([\/#%])}{\$1}g;
+      $match =~ s{([\/#%])}{\\$1}g;
       push @out, qq{  out="\${out//$match/$replace}"\n};
     }
   }
 
   push @out, <<'TXT';
+
+  # Colour & space path :s
   esc=$( echo -e "\e" )
   out="${out//:/ $esc[36m:$esc[32m }"
   printf "%s" "$out"
@@ -125,7 +128,6 @@ TXT
 # Calling this from PS1 is done by pipes & clone(2) i.e. subshell in
 # its own process.  It seems to be the only way to nest substitutions.
 # We don't call it unless PERL_LOCAL_LIB_ROOT is set.
-
 TXT
 
   $base =~ s{'}{'"'"'}g;
@@ -151,6 +153,39 @@ TXT
 #   /etc/bash_completion.d/git.dpkg-dist has recommendations for Git
 
   return join '', @out;
+}
+
+
+my %CONFIG;
+sub config {
+  my $key = shift;
+  my $have_default = !!@_;
+  my $default = shift;
+
+  if (!keys %CONFIG) {
+    my $ok = eval { config_load("$ENV{HOME}/.psst") };
+    if (!$ok) {
+      # Load failed.  Make the problem available for later.
+      $CONFIG{_load_failed} = $@;
+    }
+  }
+
+  if (!exists $CONFIG{$key}) {
+    return $default if $have_default;
+    die "No configuration for '$key'";
+  } else {
+    return $CONFIG{$key};
+  }
+}
+
+sub config_load {
+  my ($fn) = @_;
+  require YAML;
+  my @load = YAML::LoadFile($fn);
+  die "$fn: Expected one hash item, got ".@load." items"
+    unless 1==@load && ref($load[0]) eq 'HASH';
+  %CONFIG = (%{ $load[0] }, _src => $fn);
+  return 1;
 }
 
 main();

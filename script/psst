@@ -102,10 +102,10 @@ sub prompt_set {
   my @out;
   push @out, <<'TXT';
 _psst_format() {
-  local out esc
+    local out esc
 
-  # Homedir replacement
-  out="${PERL_LOCAL_LIB_ROOT//~/~}"
+    # Homedir replacement
+    out="${PERL_LOCAL_LIB_ROOT//~/~}"
 TXT
 
   my @substs = @{ config($key.'_substs', []) };
@@ -114,16 +114,16 @@ TXT
     foreach my $subst (@substs) {
       my ($match, $replace) = @$subst;
       $match =~ s{([\/#%])}{\\$1}g;
-      push @out, qq{  out="\${out//$match/$replace}"\n};
+      push @out, qq{    out="\${out//$match/$replace}"\n};
     }
   }
 
   push @out, <<'TXT';
 
-  # Colour & space path :s
-  esc=$( echo -e "\e" )
-  out="${out//:/ $esc[36m:$esc[32m }"
-  printf "%s" "$out"
+    # Colour & space path :s
+    esc=$( echo -e "\e" )
+    out="${out//:/ $esc[36m:$esc[32m }"
+    printf "%s" "$out"
 }
 # Calling this from PS1 is done by pipes & clone(2) i.e. subshell in
 # its own process.  It seems to be the only way to nest substitutions.

@@ -74,7 +74,8 @@ sub prompt_base {
   # 4. shell variable, if exported
   $out = prompt_strip($key, $ENV{$key}) if defined $ENV{$key};
 
-  # 3. config file.  YAGNI.
+  # 3. config file
+  $out = config(PS1_old => undef) if !defined $out;
 
   # 2. environment we exported.  YAGNI.
 
@@ -163,7 +164,7 @@ sub config {
   my $default = shift;
 
   if (!keys %CONFIG) {
-    my $ok = eval { config_load("$ENV{HOME}/.psst") };
+    my $ok = eval { config_load("$ENV{HOME}/.psst.yaml") };
     if (!$ok) {
       # Load failed.  Make the problem available for later.
       $CONFIG{_load_failed} = $@;
@@ -194,6 +195,10 @@ main();
 # s/dir/name patterns held in bash env
 # updating needed to abbreviate the new
 
+
+=head1 FILES
+
+F<~/.psst.yaml> is the configuration file.
 
 =head1 AUTHOR
 

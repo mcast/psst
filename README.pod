@@ -25,7 +25,7 @@ in all my $HOMEs.
 
 =head1 AUTHOR
 
-Copyright 2011 by Matthew Astley L<http://www.t8o.org/~mca1001/>
+Copyright 2011 by Matthew Astley L<mca1001@users.sourceforge.net>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

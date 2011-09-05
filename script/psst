@@ -193,3 +193,13 @@ main();
 # local lib names,
 # s/dir/name patterns held in bash env
 # updating needed to abbreviate the new
+
+
+=head1 AUTHOR
+
+Copyright 2011 by Matthew Astley L<mca1001@users.sourceforge.net>
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

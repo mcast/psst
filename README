@@ -30,4 +30,11 @@ Copyright 2011 by Matthew Astley L<mca1001@users.sourceforge.net>
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
+=head2 Thanks
+
+Thanks to Magnus Manske for some useful discussion of the mechanism,
+
+and this post for convincing me that this is a useful route to sanity
+http://blogs.perl.org/users/oliver_gorwits/2011/07/locallibs-for-dist-development.html
+
 =cut

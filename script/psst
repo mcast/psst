@@ -26,6 +26,27 @@ This script is intended to run during the login profile.  It ought to
 be reliable and failsafe, lightweight and require minimal early
 configuration.
 
+=head1 CONFIGURATION
+
+Configuration goes in F<~/.psst.yaml> and should consist of key/value
+pairs for one hash (dictionary).  It is entirely optional, but can
+only be read if L<YAML> is installed.
+
+=over 4
+
+=item PS1_old
+
+Write the base value for $PS1 here to avoid the need to pass it to
+each call to C<psst prompt>.
+
+=item PS1_substs
+
+If present, should be a list of C<< [ $text, $replacement ] >> pairs.
+These are applied in order to the C<$PERL_LOCAL_LIB_ROOT> by Bash,
+after being munged into a set of Bash Variable Substitutions.
+
+=back
+
 =head1 CAVEATS
 
 Author reserves the right to turn this into the Portable Sanity
@@ -75,7 +96,7 @@ sub prompt_base {
   $out = prompt_strip($key, $ENV{$key}) if defined $ENV{$key};
 
   # 3. config file
-  $out = config(PS1_old => undef) if !defined $out;
+  $out = config("${key}_old" => undef) if !defined $out;
 
   # 2. environment we exported.  YAGNI.
 

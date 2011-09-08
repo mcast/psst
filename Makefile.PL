@@ -30,4 +30,10 @@ WriteMakefile
      },
      # bugtracker => none
     },
+
+    optional_features =>
+    { config => { description => 'Ability to read ~/.psst.yaml',
+		  requires => { YAML => '0.71' } },
+    },
+
    });

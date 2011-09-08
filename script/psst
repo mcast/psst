@@ -64,6 +64,9 @@ sub main {
     die "$0 prompt: takes one optional parameter, got ".@ARGV if @ARGV > 1;
     my $old_ps1 = prompt_base(PS1 => @ARGV);
     print prompt_set(PS1 => $old_ps1);
+  } elsif ($subcmd =~ /^((--)?version|-v)$/) {
+    require App::psst;
+    print "psst $App::psst::VERSION\n";
   } else {
     die "Unknown subcommand '$subcmd'\n";
   }

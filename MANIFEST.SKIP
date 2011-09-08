@@ -1,0 +1,6 @@
+^App-psst-[0-9.]+\.
+^\.git/
+^\.gitignore$
+~$
+^Makefile(\.old)?$
+^MANIFEST\.(SKIP|bak)$

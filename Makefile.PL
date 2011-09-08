@@ -11,6 +11,8 @@ WriteMakefile
 
    LICENSE => 'perl',
 
+   PREREQ_PM => { 'local::lib' => '1.008' }, # for PERL_LOCAL_LIB_ROOT
+
    MIN_PERL_VERSION => '5.006', # probably
 
    META_MERGE =>

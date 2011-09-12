@@ -143,10 +143,14 @@ TXT
     }
   }
 
+  push @out, <<"TXT";
+
+    esc="\x1b" # One literal ESC (else we must generate or store it)
+TXT
+
   push @out, <<'TXT';
 
     # Colour & space path :s
-    esc=$( echo -e "\e" )
     out="${out//:/ $esc[36m:$esc[32m }"
     printf "%s" "$out"
 }

@@ -13,6 +13,11 @@ WriteMakefile
 
    PREREQ_PM => { 'local::lib' => '1.008' }, # for PERL_LOCAL_LIB_ROOT
 
+   BUILD_REQUIRES => { # for the tests
+       'Test::More' => 0,
+       'Time::HiRes' => '1.9713', # for ualarm( >= 1E6 )
+   },
+
    MIN_PERL_VERSION => '5.006', # probably
 
    META_MERGE =>

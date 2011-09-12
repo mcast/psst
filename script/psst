@@ -222,7 +222,7 @@ main();
 
 =head1 FILES
 
-F<~/.psst.yaml> is the configuration file.
+F<~/.psst.yaml> is the configuration file, taking C<~> from C<%ENV>.
 
 =head1 AUTHOR
 

@@ -1,0 +1,138 @@
+Revision History for App-psst
+=============================
+
+0.003010
+--------
+
+commit e3c01c6f8679a9d1ad77edcd7bc6c26ec5d173d5
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Mon Oct 3 23:00:43 2011 +0100
+
+    prefer :G:DescribeVersion over :G:NextVersion
+     and :ChangelogFromGit over :ChangelogFromGit.
+    
+    (but this DescribeVersion can't make a
+     v0.01_0123 style version number)
+
+commit be050286cf45333e81ea08ec71707148869170c0
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Mon Oct 3 12:54:29 2011 +0100
+
+    more DZ plugins.
+    
+    keep the longer manual README for now;
+    generate LICENSE;
+    start collecting xt/ tests;
+    replace hardwired $VERSION with PkgVersion
+
+commit c35f32add5f1066b467eb91560dfe4961fd0ea88
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Mon Oct 3 09:14:59 2011 +0100
+
+    Git-related D:Z config
+    
+    (listing plugins that interest me, from
+     http://search.cpan.org/~cjm/Dist-Zilla-Plugin-PodLoom-4.00/lib/Dist/Zilla/Plugin/PodLoom.pm )
+
+commit c5671ff91eabd39939bf734618c82b60d0fc320f
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Fri Sep 30 22:59:14 2011 +0100
+
+    more D:Z:P
+
+commit b213e204b75c5ffc019245cb134648feaa561118
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Fri Sep 30 22:03:55 2011 +0100
+
+    switch to Dist::Zilla.
+    
+    replace MANIFEST* and Makefile.PL with dist.ini;
+    don't expect MANIFEST.bak to appear now;
+    fiddle with gather/prune/exec;
+    might as well specify rt.cpan.org
+    
+    optional_features not supported?
+    probably want the readonly git://
+
+commit 15728fcb396bd6d6dc794bc2d637e3ebbdcfd6df
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Mon Sep 12 22:57:56 2011 +0100
+
+    test fix.
+    
+    remove a capture variable to prevent an extra clone(2);
+
+commit b8a97f67c9ef0f4be38a26a6940438d6bb8af6a8
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Mon Sep 12 22:28:42 2011 +0100
+
+    some testing.
+      fails due to esc=$( echo -e "\e" )
+    
+    test to establish sanity & exercise 'psst prompt';
+    extra config files during test;
+    note, psst uses $ENV{HOME} to find config;
+    note, test REQs;
+    manifest+=
+
+commit 3e64d3ea71713ec9a31840f70bbc45abc480217c
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Thu Sep 8 23:51:17 2011 +0100
+
+    update MANIFEST & ignorance
+
+commit 1ea5df4ce99eb82525759dc91867f5bb09164491
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Thu Sep 8 23:44:33 2011 +0100
+
+    version subcommand
+
+commit 56d14559d6979cfb7888035df509caafcde74451
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Thu Sep 8 23:44:23 2011 +0100
+
+    document & fix config use;
+    tell META.yml about YAML use
+
+v0.03 2011-09-08
+----------------
+
+commit f4bb40aff5a9a16758e4b49d27b8b8846dc1f782
+Author: Matthew Astley <mca@sanger.ac.uk>
+Date:   Thu Sep 8 10:35:21 2011 +0100
+
+    need local::lib >= 1.008000
+    
+    per http://cpansearch.perl.org/src/APEIRON/local-lib-1.008004/Changes
+
+commit a808f9b701468aec16538dfbbf5212b9a70423f0
+Author: Matthew Astley <mca@sanger.ac.uk>
+Date:   Tue Sep 6 15:44:47 2011 +0100
+
+    thanks
+
+commit 33b6bf0f272b18f9085bec1881e1e743d3f42044
+Author: Matthew Astley <mca@sanger.ac.uk>
+Date:   Mon Sep 5 11:40:40 2011 +0100
+
+    don't call it README.pod because ExtUtils::MakeMaker wants to install it
+
+v0.02 2011-09-05
+----------------
+
+commit 6c3476bdcb43210702fb4aa26704d964c77331c3
+Author: Matthew Astley <mca@sanger.ac.uk>
+Date:   Mon Sep 5 11:32:48 2011 +0100
+
+    rename and mention the config file;
+    accept config for old PS1
+
+commit 46fefb4c296c874543d4cb1bdaaf3b981059774f
+Author: Matthew Astley <mca@sanger.ac.uk>
+Date:   Mon Sep 5 10:49:14 2011 +0100
+
+    reindent to match Emacs shell-script mode
+
+===================================
+End of changes in the last 365 days
+===================================

@@ -1,6 +1,6 @@
 package App::psst;
 {
-  $App::psst::VERSION = '0.04';
+  $App::psst::VERSION = '0.003010';
 }
 
 use strict;

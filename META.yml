@@ -16,9 +16,9 @@ meta-spec:
 name: App-psst
 requires:
   local::lib: 1.008
-  perl: 5.006
+  perl: 5.008
 resources:
   bugtracker: http://rt.cpan.org/Public/Dist/Display.html?Name=App-psst
   homepage: https://github.com/mca-wtsi/psst
   repository: git://github.com/mca-wtsi/psst
-version: 0.003012
+version: 0.003015

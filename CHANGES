@@ -1,8 +1,23 @@
 Revision History for App-psst
 =============================
 
-0.003012
+0.003015
 --------
+
+commit 113e132f643f1fcf2d3180ef3a268fad670f5eaf
+Merge: ea07a35 d754fc0
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Fri Oct 7 09:10:52 2011 +0100
+
+    Merge branch 'dzil'
+    
+    replaces hand-maintenance of several files
+    with a heavy (author side) dependency chain
+    
+      cpan Dist::Zilla
+      DZPLUGS="$( dzil authordeps --missing | grep -v 'Current Command' )"
+      echo $DZPLUGS
+      cpan $DZPLUGS
 
 commit d754fc0f6a8f076293004429d2d85abe3639e8a1
 Author: Matthew Astley <beeep$mca@t8o.org>
@@ -59,6 +74,12 @@ Date:   Mon Oct 3 09:14:59 2011 +0100
     (listing plugins that interest me, from
      http://search.cpan.org/~cjm/Dist-Zilla-Plugin-PodLoom-4.00/lib/Dist/Zilla/Plugin/PodLoom.pm )
 
+commit ea07a357ed0585ea4ca005ca66e6e2b77cc50cca
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Fri Sep 30 21:59:04 2011 +0100
+
+    update MANIFEST (exactly the sort of reason I wanted dzil)
+
 commit c5671ff91eabd39939bf734618c82b60d0fc320f
 Author: Matthew Astley <beeep$mca@t8o.org>
 Date:   Fri Sep 30 22:59:14 2011 +0100
@@ -78,6 +99,16 @@ Date:   Fri Sep 30 22:03:55 2011 +0100
     
     optional_features not supported?
     probably want the readonly git://
+
+commit 799414289c4afe64f2fab8c5f01e9ed176e6a8df
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Sat Oct 1 22:45:31 2011 +0100
+
+    split out sanity tests, to support BAIL.
+    
+    extract the BashRunner;
+    move out to new 00- test: preconds_tt, histzap_tt, interactiveness_tt;
+    do BAIL_OUT (latest possible END!)
 
 commit 15728fcb396bd6d6dc794bc2d637e3ebbdcfd6df
 Author: Matthew Astley <beeep$mca@t8o.org>

@@ -2,7 +2,7 @@ NAME
     App::psst - prompt string setting tool
 
 VERSION
-    version 0.003012
+    version 0.003015
 
 DESCRIPTION
     Set-once configuration for ~/.bashrc to show presence of

@@ -1,6 +1,6 @@
 package App::psst;
 {
-  $App::psst::VERSION = '0.003012';
+  $App::psst::VERSION = '0.003015';
 }
 
 use strict;
@@ -14,7 +14,7 @@ App::psst - prompt string setting tool
 
 =head1 VERSION
 
-version 0.003012
+version 0.003015
 
 =head1 DESCRIPTION
 

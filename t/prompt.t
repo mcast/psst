@@ -1,84 +1,15 @@
 #! perl
 use strict;
 use warnings;
-use Test::More tests => 20;
-use POSIX ":sys_wait_h";
-use Time::HiRes qw( gettimeofday tv_interval ualarm );
+use Test::More tests => 5;
+
+use lib 't/tlib';
+use BashRunner 'bash_interactive';
+
 
 sub main {
   $ENV{PATH} = "blib/script:$ENV{PATH}"; # not set by prove or Makefile.PL
-
-  preconds_tt(); # 9
-  histzap_tt(); # 2
-  interactiveness_tt(); # 4
   prompt_tt(); # 5
-}
-
-
-sub preconds_tt {
-  # see that we're talking to something we understand
-  my $bash_version_txt = `bash --version`;
-  my ($bash_version) =
-    ($bash_version_txt =~ qr{\bbash\b.* version ([-0-9.]+\S)});
-  like($bash_version, qr{^([3-9]|\d{2,})\.\d+}, # >= v3 is a guess
-       "bash --version: sane and modern-ish");
-
-  foreach my $k (qw( POSIXLY_CORRECT PROMPT_COMMAND PROMPT_DIRTRIM )) {
-    ok(!defined $ENV{$k}, "Bash with \$$k is untested, YMMV");
-  }
-
-  # can we find ourself with both hands?
-  foreach my $fn (qw( blib/script/psst t/prompt.t )) {
-    ok(-f $fn, "$fn is a file");
-  }
-  is(devino($0), devino('t/prompt.t'), 'running in there');
-
-  # need our built copy on PATH, PERL5LIB
-#  like($ENV{PATH}, qr{^[^:]*blib/script/?(:|$)}, 'our blib on $ENV{PATH}');
-# hardwired above
-  like((join ':', @INC), qr{^[^:]*blib/lib/?(:|$)}, 'our blib on @INC');
-  like($ENV{PERL5LIB}, qr{^[^:]*blib/lib/?(:|$)}, 'our blib on $ENV{PERL5LIB}');
-}
-
-sub histzap_tt {
-  # ensure we are not polluting user's history file
-  my $histfn = "$ENV{HOME}/.bash_history";
-  my $pid = $$;
-
-  like(bash_interactive("echo 'disTincTivecanarycommand+$pid from $0'"),
-       qr{^disTincTive.*$pid\b}m, "ran history canary");
-
- SKIP: {
-    skip "no $histfn", 1 unless -f $histfn;
-    if (open my $fh, '<', $histfn) {
-      my @hit;
-      while (<$fh>) {
-	push @hit, $_ if /disTincTivecanarycommand.*$pid/;
-      }
-      is("@hit", '', "$histfn not polluted");
-    } else{
-      fail("read $histfn: $!");
-    }
-  }
-}
-
-sub interactiveness_tt {
-  # see that &bash_interactive works
-
-  is(bash_interactive("echo \$PPID\n", PS1 => '>'),
-     qq{>echo \$PPID\n$$\n>exit\n}, "PPID check");
-
-  my $quick_alarm = 0.75; # too quick will cause false fail; slow is tedious
-  my $t0 = [gettimeofday()];
-  my $ans = eval { bash_interactive("sleep 7", maxt => $quick_alarm) } || $@;
-  my $wallclock = tv_interval($t0);
-  like($ans, qr{Timeout.*waiting for}, "ualarm fired (total $wallclock sec)");
-  cmp_ok($wallclock, '>', $quick_alarm * 0.7, 'ualarm waited');
-
-  local @ENV{qw{ G1 G2 G3 }} =
-    ('ABCD goldfish', 'MA goldfish', 'SAR CDBDIs');
-  like(bash_interactive(qq{echo \$G1; echo \$G2\necho \$G3\n}),
-       qr{ABCD.*MA.*SAR}s, "command sequence");
 }
 
 
@@ -178,87 +109,6 @@ sub pidseq_subtest {
   }
 }
 
-
-# %arg keys
-#   PS1 => set in %ENV
-#   maxt => alarm timeout/sec, default 5
-sub bash_interactive {
-  my ($in, %arg) = @_;
-
-  my $maxt = delete $arg{maxt} || 5;
-
-  local $ENV{PS1};
-  if (defined $arg{PS1}) {
-    $ENV{PS1} = delete $arg{PS1};
-  } else {
-    delete $ENV{PS1};
-  }
-
-  local $ENV{HISTFILE} = undef;
-  local $ENV{IGNOREEOF};
-  delete $ENV{IGNOREEOF};
-
-  my @cmd = qw( bash --noprofile --norc -i );
-
-  my @left = sort keys %arg;
-  die "unknown %arg keys @left" if @left;
-
-  pipe(my $read_fh, my $write_fh);
-  #
-  #  this test process
-  #    \-- write $in to pipe
-  #    \-- bash <( pipe ) | test process
-
-  # Writer subprocess: send $in down the pipe
-  my $wr_pid = fork();
-  die "fork() for writer failed: $!" unless defined $wr_pid;
-  if (!$wr_pid) {
-    # child - do the writing
-    close $read_fh;
-    print $write_fh $in;
-    exit 0;
-  }
-
-  # Reader subprocess, eventually becomes the shell
-  my $rd_pid = open my $shout_fh, "-|";
-  die "fork() for shell failed: $!" unless defined $rd_pid;
-  if (!$rd_pid) {
-    # child - connect pipe to shell
-    close $write_fh;
-    open STDERR, '>&', \*STDOUT
-      or die "Can't dup STDERR into STDOUT: $!";
-    open STDIN, '<&', \*$read_fh
-      or die "Can't dup STDIN from pipe: $!";
-    exec @cmd or die "exec(@cmd) failed: $!";
-  }
-  close $write_fh;
-  close $read_fh;
-
-  local $SIG{ALRM} = sub {
-    kill 'HUP', $rd_pid; # kick the shell on our way out
-    die "Timeout(${maxt}s) waiting for @cmd";
-  };
-  ualarm($maxt * 1E6);
-
-  my $out = join '', <$shout_fh>;
-  close $shout_fh;
-  $out .= sprintf("\nRETCODE:0x%02x\n", $?) if $?;
-
-  ualarm(0);
-
-  # wait on writer, for tidiness
-  while ((my $done = waitpid(-1, WNOHANG)) > 0) {
-    warn "something on pid=$done (probably a writer) failed ?=$?" if $?;
-  }
-
-  return $out;
-}
-
-sub devino {
-  my ($fn) = @_;
-  my @s = stat($fn);
-  return @s ? "$s[0]:$s[1]" : "$fn absent";
-}
 
 sub deansi {
   my ($txt) = @_;

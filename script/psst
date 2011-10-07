@@ -230,7 +230,9 @@ F<~/.psst.yaml> is the configuration file, taking C<~> from C<%ENV>.
 
 =head1 AUTHOR
 
-Copyright 2011 by Matthew Astley L<mca1001@users.sourceforge.net>
+Copyright (C) 2011 Genome Research Limited
+
+Author Matthew Astley L<mca@sanger.ac.uk>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -27,7 +27,7 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "local::lib" => "1.008"
   },
-  "VERSION" => "0.003010",
+  "VERSION" => "0.003011",
   "test" => {
     "TESTS" => "t/*.t"
   }

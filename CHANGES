@@ -1,8 +1,16 @@
 Revision History for App-psst
 =============================
 
-0.003010
+0.003011
 --------
+
+commit cfc412443a24d8fb4477c84e692b6b10a5ac897a
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Tue Oct 4 17:46:16 2011 +0100
+
+    more plugins;
+    fix(?) plugin ordering;
+    mark sections
 
 commit e3c01c6f8679a9d1ad77edcd7bc6c26ec5d173d5
 Author: Matthew Astley <beeep$mca@t8o.org>

@@ -8,6 +8,10 @@ use warnings;
 
 psst - prompt string setting tool
 
+=head1 VERSION
+
+version 0.003011
+
 =head1 SYNOPSIS
 
 In F<~/.bashrc> add

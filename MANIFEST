@@ -7,8 +7,10 @@ README
 dist.ini
 lib/App/psst.pm
 script/psst
+t/author-critic.t
 t/bashrc
 t/home-ps1/.psst.yaml
 t/home-substing/.psst.yaml
 t/prompt.t
-xt/release/has-version.t
+t/release-has-version.t
+t/release-pod-syntax.t

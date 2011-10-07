@@ -1,9 +1,11 @@
 package App::psst;
+{
+  $App::psst::VERSION = '0.04';
+}
 
 use strict;
 use warnings;
 
-our $VERSION = 0.03;
 
 =head1 NAME
 

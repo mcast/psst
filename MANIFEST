@@ -1,3 +1,4 @@
+LICENSE
 MANIFEST
 META.yml
 Makefile.PL
@@ -9,3 +10,4 @@ t/bashrc
 t/home-ps1/.psst.yaml
 t/home-substing/.psst.yaml
 t/prompt.t
+xt/release/has-version.t

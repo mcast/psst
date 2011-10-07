@@ -1,8 +1,25 @@
 Revision History for App-psst
 =============================
 
-0.003011
+0.003012
 --------
+
+commit d754fc0f6a8f076293004429d2d85abe3639e8a1
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Thu Oct 6 22:32:26 2011 +0100
+
+    generate READMEs from POD.
+    
+    use DZP:ReadmeAnyFromPod to do the hard work;
+    generate text README in the dist;
+    maintain a README.html in the source, for the benefit of Github;
+    fix typo & authorship
+    
+    Why the confusion about the author?
+    I did part of the early research & implementation for this project at
+    $work, but most of the polishing and learning about dzil in my own
+    time.  It doesn't matter to me who "owns the copyright" while the
+    software is Free.
 
 commit cfc412443a24d8fb4477c84e692b6b10a5ac897a
 Author: Matthew Astley <beeep$mca@t8o.org>

@@ -1,0 +1,11 @@
+MANIFEST
+META.yml
+Makefile.PL
+README
+dist.ini
+lib/App/psst.pm
+script/psst
+t/bashrc
+t/home-ps1/.psst.yaml
+t/home-substing/.psst.yaml
+t/prompt.t

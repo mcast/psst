@@ -1,8 +1,20 @@
 Revision History for App-psst
 =============================
 
-0.003015
+0.003016
 --------
+
+commit fb9323a4c0f83576dbd3b7c64730c3e62dfad393
+Author: Matthew Astley <beeep$mca@t8o.org>
+Date:   Fri Oct 7 09:15:11 2011 +0100
+
+    fix up dzil edges.
+    
+    ignorance of failed-test builds;
+    pacify perlcritic;
+    add generated-to-source README
+      made by [ReadmeAnyFromPod / ForSource] in dist.ini
+      from App::psst
 
 commit 113e132f643f1fcf2d3180ef3a268fad670f5eaf
 Merge: ea07a35 d754fc0

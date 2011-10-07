@@ -21,4 +21,4 @@ resources:
   bugtracker: http://rt.cpan.org/Public/Dist/Display.html?Name=App-psst
   homepage: https://github.com/mca-wtsi/psst
   repository: git://github.com/mca-wtsi/psst
-version: 0.003015
+version: 0.003016

@@ -9,3 +9,6 @@ App-psst-*.*
 *~
 \#*\#
 .\#*
+
+# leftover failed-test buids
+/.build/

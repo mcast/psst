@@ -1,7 +1,7 @@
-package App::psst;
-
 use strict;
 use warnings;
+
+package App::psst;
 
 
 =head1 NAME

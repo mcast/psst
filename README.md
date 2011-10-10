@@ -48,3 +48,26 @@ and to my employer for making it easy to mix free software with $work.
 # SEE ALSO
 
 L<psst(1)>
+
+## Related tools
+
+These are tools I have found links to.  I have not yet chosen some to
+assemble a better working environment.
+
+- [Git::CPAN::Hook](http://search.cpan.org/perldoc?Git::CPAN::Hook) or [CPANPLUS::Dist::GitHook](http://search.cpan.org/perldoc?CPANPLUS::Dist::GitHook)
+- [App::local::lib::helper](http://search.cpan.org/perldoc?App::local::lib::helper) ([App::local::lib::helper::rationale](http://search.cpan.org/perldoc?App::local::lib::helper::rationale))
+
+`localenv bash` starts a new shell, which psst can configure.
+
+- [App::PerlLocalEnv](http://search.cpan.org/perldoc?App::PerlLocalEnv), L<perl-local-env(1)>
+
+`perl-local-lib $DIR activate` starts a new shell, which psst can
+configure.
+
+- [App::local::lib::Win32Helper](http://search.cpan.org/perldoc?App::local::lib::Win32Helper)
+
+This psst has not (yet) been tested with bash under Windows.
+
+- [App::perlbrew](http://search.cpan.org/perldoc?App::perlbrew)
+
+This version of psst knows nothing about perlbrew.

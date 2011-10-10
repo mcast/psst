@@ -54,6 +54,44 @@ and to my employer for making it easy to mix free software with $work.
 
 L<psst(1)>
 
+=head2 Related tools
+
+These are tools I have found links to.  I have not yet chosen some to
+assemble a better working environment.
+
+=over 4
+
+=item *
+
+L<Git::CPAN::Hook> or L<CPANPLUS::Dist::GitHook>
+
+=item *
+
+L<App::local::lib::helper> (L<App::local::lib::helper::rationale>)
+
+C<localenv bash> starts a new shell, which psst can configure.
+
+=item *
+
+L<App::PerlLocalEnv>, L<perl-local-env(1)>
+
+C<perl-local-lib $DIR activate> starts a new shell, which psst can
+configure.
+
+=item *
+
+L<App::local::lib::Win32Helper>
+
+This psst has not (yet) been tested with bash under Windows.
+
+=item *
+
+L<App::perlbrew>
+
+This version of psst knows nothing about perlbrew.
+
+=back
+
 =cut
 
 1;

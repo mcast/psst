@@ -175,7 +175,7 @@ PS1='${PERL_LOCAL_LIB_ROOT:+\[\e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m$( _psst_format 
 
 TXT
 
-# Another option would be a minimal "LL) " indicator, plus a quick "What PERL_LOCAL_LIB_ROOT do I have?" command.
+# Another option would be a minimal "LL) " indicator, plus a quick "What PERL_LOCAL_LIB_ROOT do I have?" command.  The default for `psst`?
 #
 #   /etc/profile gives '\u@\h:\w\$ '
 #   /etc/skel/.bashrc and /etc/bash.bashrc give assorted debian_chroot indicators
@@ -219,7 +219,7 @@ sub config_load {
 
 main();
 
-# local lib names,
+# XXX:? local lib names,
 # s/dir/name patterns held in bash env
 # updating needed to abbreviate the new
 

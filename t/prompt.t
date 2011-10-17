@@ -9,7 +9,13 @@ use BashRunner 'bash_interactive';
 
 sub main {
   $ENV{PATH} = "blib/script:$ENV{PATH}"; # not set by prove or Makefile.PL
-  prompt_tt(); # 5
+
+  # prevent influence from real local::lib
+  my @LLvars = qw{PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT MODULEBUILDRC};
+  delete @ENV{@LLvars};
+
+  prompt_tt(); # 2
+  pidburn_tt(); # 3
 }
 
 
@@ -17,11 +23,6 @@ sub prompt_tt {
   local $ENV{HOME} = 't/home-ps1';
   local $ENV{PS1_FROM_TEST} = 'here> '; # nb. trailing space is lost in bashrc
   # because we allow absence of that arg
-
-  # prevent influence from real local::lib
-  my @LLvars = qw{PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT MODULEBUILDRC};
-  local @ENV{@LLvars};
-  delete @ENV{@LLvars};
 
   # getting initialised...  --rcfile t/bashrc doesn't?
   my $run = qq{. t/bashrc\necho showvar::\$BASHRC_FOR_TESTING::\n};
@@ -31,10 +32,13 @@ sub prompt_tt {
 
   delete $ENV{PS1_FROM_TEST};
   like(bash_interactive($run), qr{^cfgd> echo}m, 'take PS1_old from home-ps1');
+}
 
+
+sub pidburn_tt {
   # does Bash burn pids?
  SKIP: {
-    my $pidseq = pidseq_subtest($run);
+    my $pidseq = pidseq_subtest();
     skip 'pid allocation appears to be randomised', 3
       if $pidseq =~ /^rand/;
 
@@ -42,11 +46,11 @@ sub prompt_tt {
     local $ENV{PERL_LOCAL_LIB_ROOT} = '/path/to/foo:/path/to/bar';
   TODO: {
       local $TODO = 'not implemented in psst(1)';
-      like(pidseq_subtest($run), qr{^sequential=1 },
+      like(pidseq_subtest(), qr{^sequential=1 },
 	   "don't burn pids unless PS1_substs");
     }
     local $ENV{HOME} = 't/home-substing';
-    like(pidseq_subtest($run), qr{^promptburn=2 },
+    like(pidseq_subtest(), qr{^promptburn=2 },
 	 'it seems we must burn pids to do PS1_substs');
   }
 }
@@ -64,11 +68,10 @@ sub prompt_tt {
 # PID wrap should not cause problems.  Fast PID churn from other
 # sources might require larger $N to get non-weird results.
 sub pidseq_subtest {
-  my ($base_run) = @_;
   my $N = 50;
 
   # print many prompts, examine pid issued to the process requested
-  my $run = $base_run.("perl -e 'print qq{pid:\$\$\\n}'\n" x $N);
+  my $run = ". t/bashrc\n".("perl -e 'print qq{pid:\$\$\\n}'\n" x $N);
   my $txt = bash_interactive($run, maxt => $N / 5);
 
   my @pid = ($txt =~ m{^pid:(\d+)$}mg);
@@ -85,17 +88,21 @@ sub pidseq_subtest {
     my $diff = $pid[1] - (shift @pid);
     $hist{$diff} ++;
   }
+
+  $N --; # we are now interested in differences between PIDs; sample of these is smaller
   my @hist; # output elements
   my @diff_sig; # $diff which are significant
+  my $thres = sqrt($N);
   foreach my $diff (sort {$hist{$b} <=> $hist{$a}} keys %hist) {
     my $count = $hist{$diff};
-    my $sig = $count / sqrt($N);
-    $count .= '/'.($N-1) if !@hist; # show total on first ele
+    my $sig = $count / $thres;
+    $count .= "/$N" if !@hist; # show total on first ele
     my $ele = $sig > 1 ? "$diff <$count>" : "($diff x$count)";
     push @diff_sig, $diff if $sig > 1;
     push @hist, $ele;
   }
   my $raw = join ', ', @hist;
+  $raw .= sprintf('; thres=%.2f', $thres);
 
   # Summarise
   if (0 == @diff_sig) {
@@ -105,7 +112,7 @@ sub pidseq_subtest {
     my $type = { 1 => 'sequential', 2 => 'promptburn' }->{$diff} || 'weird';
     return "$type=$raw";
   } else {
-    return "weird (not unimodal): $raw";
+    return "weird (not unimodal..  not enough trials? system busy?): $raw";
   }
 }
 

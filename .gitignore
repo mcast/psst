@@ -3,12 +3,13 @@ Makefile
 Makefile.old
 blib
 pm_to_blib
-App-psst-*.*
 
 # emacs
 *~
 \#*\#
 .\#*
 
-# leftover failed-test buids
+# dzil output
+App-psst-*.*
+Makefile.PL
 /.build/

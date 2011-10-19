@@ -1,7 +1,8 @@
 #! perl
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More tests => 8;
+# use YAML 'Dump'; # gives nice \e (etc.) representation of control codes
 
 use lib 't/tlib';
 use BashRunner 'bash_interactive';
@@ -14,7 +15,7 @@ sub main {
   my @LLvars = qw{PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT MODULEBUILDRC};
   delete @ENV{@LLvars};
 
-  prompt_tt(); # 2
+  prompt_tt(); # 5
   pidburn_tt(); # 3
 }
 
@@ -24,14 +25,48 @@ sub prompt_tt {
   local $ENV{PS1_FROM_TEST} = 'here> '; # nb. trailing space is lost in bashrc
   # because we allow absence of that arg
 
-  # getting initialised...  --rcfile t/bashrc doesn't?
+  ###  See that we get initialised
+  #
+  # --rcfile t/bashrc doesn't?
+  # but sourcing our config at the prompt works
   my $run = qq{. t/bashrc\necho showvar::\$BASHRC_FOR_TESTING::\n};
   like(bash_interactive($run),
        qr{^here>echo.*\nshowvar::seen::\nhere>exit\n\z}m,
        'see our bashrc, use our prompt');
 
+  # See that the config in fake $HOME is used
+  # With no local::lib, no other prompt marks
+  my @ll_marks = (qr{^LL\) }m, qr{^l:l=}m);
   delete $ENV{PS1_FROM_TEST};
-  like(bash_interactive($run), qr{^cfgd> echo}m, 'take PS1_old from home-ps1');
+  my $out2 = bash_interactive($run);
+  like($out2, qr{\ncfgd> echo}m, 'take PS1_old from home-ps1');
+  does_qrs($out2, \@ll_marks, 0, 'out2 (non-LL)');
+
+  $ENV{HOME} = 't/home-substing';
+  $run = qq{. t/bashrc\nPERL_LOCAL_LIB_ROOT=/twang/fump\n};
+  my $out3 = bash_interactive($run);
+  $out3 =~ s{\Abash-[\d.]+\$ }{> };
+  does_qrs(deansi($out3), \@ll_marks, 2, 'out3 (+LL deansi)');
+
+  # Hardcoding the output from the ANSI code generator is sure to be a
+  # maintenance burden...  change it Later.
+  is($out3, <<"LITERAL", 'out3 (+LL literal)');
+> . t/bashrc
+cfgd> PERL_LOCAL_LIB_ROOT=/twang/fump
+\e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m/twang/fump\e8\e[32mLL)\e[0m cfgd> exit
+LITERAL
+}
+
+sub does_qrs {
+  my ($got, $regexps, $want_hitcount, $name) = @_;
+
+  my @hit;
+  foreach my $re (@$regexps) {
+    my @cap = $got =~ $re;
+    push @hit, [ $re, @cap ] if @cap;
+  }
+  is(scalar @hit, $want_hitcount, $name)
+    or diag Dump({ got_hits => \@hit, got_text => $got, want_hits => $want_hitcount });
 }
 
 
@@ -117,11 +152,15 @@ sub pidseq_subtest {
 }
 
 
-sub deansi {
+sub deansi { # removes ANSI/vt100 codes we use
   my ($txt) = @_;
-  $txt =~ s{\x1b(\][0-9;]*m)}{}g;
+  $txt =~ s{\x1b\[([0-9;]*)m}{dv(c => $1)}eg; # colour
+  $txt =~ s{\x1b\[([0-2]?)K}{dv(e => $1)."\n"}eg; # erase
+  $txt =~ s{\x1b([78])}{dv(sr => $1)."\n"}eg; # save/restore
   return $txt;
 }
-
+sub dv { # deansi: hackable verbosity, for debugging; breaks tests
+  return $ENV{TEST_DEANSI_SHOW} ? "(($_[0] => $_[1]))" : '';
+}
 
 main();

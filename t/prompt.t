@@ -1,7 +1,7 @@
 #! perl
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 10;
 # use YAML 'Dump'; # gives nice \e (etc.) representation of control codes
 
 use lib 't/tlib';
@@ -15,7 +15,7 @@ sub main {
   my @LLvars = qw{PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT MODULEBUILDRC};
   delete @ENV{@LLvars};
 
-  prompt_tt(); # 5
+  prompt_tt(); # 7
   pidburn_tt(); # 3
 }
 
@@ -45,7 +45,7 @@ sub prompt_tt {
   $ENV{HOME} = 't/home-substing';
   $run = qq{. t/bashrc\nPERL_LOCAL_LIB_ROOT=/twang/fump\n};
   my $out3 = bash_interactive($run);
-  $out3 =~ s{\Abash-[\d.]+\$ }{> };
+  deprompt(\$out3);
   does_qrs(deansi($out3), \@ll_marks, 2, 'out3 (+LL deansi)');
 
   # Hardcoding the output from the ANSI code generator is sure to be a
@@ -55,6 +55,14 @@ sub prompt_tt {
 cfgd> PERL_LOCAL_LIB_ROOT=/twang/fump
 \e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m/twang/fump\e8\e[32mLL)\e[0m cfgd> exit
 LITERAL
+
+  # Takes env & does substitution
+  local $ENV{PERL_LOCAL_LIB_ROOT} = '/twang/fump:/path/to/stuff';
+  $run = qq{. t/bashrc\n\n};
+  my $out4 = bash_interactive($run);
+  deprompt(\$out4);
+  does_qrs(deansi($out4), \@ll_marks, 2, 'out4 (+LL deansi)');
+  like(deansi($out4), qr{^l:l=/twang/fump : PT/stuff$}m, 'out4 (substituted, deansi)');
 }
 
 sub does_qrs {
@@ -77,7 +85,7 @@ sub pidburn_tt {
     skip 'pid allocation appears to be randomised', 3
       if $pidseq =~ /^rand/;
 
-    like($pidseq, qr{^sequential=1 }, 'Bash does not burn PIDs');
+    like($pidseq, qr{^sequential=1 }, 'Unconfigured, Bash does not burn PIDs');
     local $ENV{PERL_LOCAL_LIB_ROOT} = '/path/to/foo:/path/to/bar';
   TODO: {
       local $TODO = 'not implemented in psst(1)';
@@ -152,11 +160,19 @@ sub pidseq_subtest {
 }
 
 
+sub deprompt {
+  my ($txtref) = @_;
+  # remove Bash's initial unconfigured prompt
+  return $$txtref =~ s{\Abash-[\d.]+\$ }{> };
+}
+
 sub deansi { # removes ANSI/vt100 codes we use
   my ($txt) = @_;
   $txt =~ s{\x1b\[([0-9;]*)m}{dv(c => $1)}eg; # colour
   $txt =~ s{\x1b\[([0-2]?)K}{dv(e => $1)."\n"}eg; # erase
   $txt =~ s{\x1b([78])}{dv(sr => $1)."\n"}eg; # save/restore
+  $txt =~ s{\x1b\[(\d*[A-D])}{dv(udrl => $1)."\n"}eg; # up/down/right/left
+  $txt =~ s{\r*\n+[\r\n]*}{\n}g; # compaction to visible linebreaks
   return $txt;
 }
 sub dv { # deansi: hackable verbosity, for debugging; breaks tests

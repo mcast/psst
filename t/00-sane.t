@@ -6,7 +6,7 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 use Time::HiRes qw( gettimeofday tv_interval );
 
@@ -17,7 +17,7 @@ use BashRunner 'bash_interactive';
 sub main {
   preconds_tt(); # 11
   histzap_tt(); # 2
-  interactiveness_tt(); # 4
+  interactiveness_tt(); # 5
 }
 
 
@@ -83,11 +83,13 @@ sub interactiveness_tt {
      qq{>echo \$PPID\n$$\n>exit\n}, "PPID check");
 
   my $quick_alarm = 0.75; # too quick will cause false fail; slow is tedious
+  diag("alarm test - short delay");
   my $t0 = [gettimeofday()];
   my $ans = eval { bash_interactive("sleep 7", maxt => $quick_alarm) } || $@;
   my $wallclock = tv_interval($t0);
-  like($ans, qr{Timeout.*waiting for}, "ualarm fired (total $wallclock sec)");
-  cmp_ok($wallclock, '>', $quick_alarm * 0.7, 'ualarm waited');
+  like($ans, qr{Timeout.*waiting for}, "alarm fired (total $wallclock sec)");
+  cmp_ok($wallclock, '>', $quick_alarm * 0.7, '  and that alarm waited');
+  cmp_ok($wallclock, '<', $quick_alarm * 5.0, '  but did not wait too long');
 
   local @ENV{qw{ G1 G2 G3 }} =
     ('ABCD goldfish', 'MA goldfish', 'SAR CDBDIs');

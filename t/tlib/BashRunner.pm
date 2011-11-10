@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use POSIX ":sys_wait_h";
-use Time::HiRes qw( ualarm );
+use Time::HiRes qw( alarm );
 use base 'Exporter';
 
 our @EXPORT_OK = qw( bash_interactive );
@@ -70,13 +70,13 @@ sub bash_interactive {
     kill 'HUP', $rd_pid; # kick the shell on our way out
     die "Timeout(${maxt}s) waiting for @cmd";
   };
-  ualarm($maxt * 1E6);
+  alarm($maxt);
 
   my $out = join '', <$shout_fh>;
   close $shout_fh;
   $out .= sprintf("\nRETCODE:0x%02x\n", $?) if $?;
 
-  ualarm(0);
+  alarm(0);
 
   # wait on writer, for tidiness
   while ((my $done = waitpid(-1, WNOHANG)) > 0) {

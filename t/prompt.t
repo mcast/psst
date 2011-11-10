@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More tests => 10;
-# use YAML 'Dump'; # gives nice \e (etc.) representation of control codes
+use YAML 'Dump'; # gives nice \e (etc.) representation of control codes
 
 use lib 't/tlib';
 use BashRunner 'bash_interactive';

@@ -6,7 +6,7 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 15;
+use Test::More tests => 17;
 
 use Time::HiRes qw( gettimeofday tv_interval );
 
@@ -15,7 +15,7 @@ use BashRunner 'bash_interactive';
 
 
 sub main {
-  preconds_tt(); # 9
+  preconds_tt(); # 11
   histzap_tt(); # 2
   interactiveness_tt(); # 4
 }
@@ -29,6 +29,12 @@ sub preconds_tt {
   like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
        "bash --version: sane and modern-ish") &&
 	 diag("bash --version: $bash_version");
+
+  # Need HOME for the "history not polluted" check
+  # Need PATH during PATH-munge in later tests
+  foreach my $k (qw( HOME PATH )) {
+    ok(defined $ENV{$k} && $ENV{$k} ne '', "\$$k is set");
+  }
 
   foreach my $k (qw( POSIXLY_CORRECT PROMPT_COMMAND PROMPT_DIRTRIM )) {
     ok(!defined $ENV{$k}, "Bash with \$$k is untested, YMMV");

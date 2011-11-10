@@ -43,6 +43,7 @@ sub prompt_tt {
   does_qrs($out2, \@ll_marks, 0, 'out2 (non-LL)');
 
   $ENV{HOME} = 't/home-substing';
+  local $ENV{TERM} = 'ansi'; # else Bash may try to compensate
   $run = qq{. t/bashrc\nPERL_LOCAL_LIB_ROOT=/twang/fump\n};
   my $out3 = bash_interactive($run);
   deprompt(\$out3);

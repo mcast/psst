@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use POSIX ":sys_wait_h";
-use Time::HiRes qw( ualarm );
+use Time::HiRes qw( alarm );
 use base 'Exporter';
 
 our @EXPORT_OK = qw( bash_interactive );
@@ -12,10 +12,12 @@ our @EXPORT_OK = qw( bash_interactive );
 # %arg keys
 #   PS1 => set in %ENV
 #   maxt => alarm timeout/sec, default 5
+#   raw => don't strip off job control warning
 sub bash_interactive {
   my ($in, %arg) = @_;
 
   my $maxt = delete $arg{maxt} || 5;
+  my $raw = delete $arg{raw} || 0;
 
   local $ENV{PS1};
   if (defined $arg{PS1}) {
@@ -68,17 +70,23 @@ sub bash_interactive {
     kill 'HUP', $rd_pid; # kick the shell on our way out
     die "Timeout(${maxt}s) waiting for @cmd";
   };
-  ualarm($maxt * 1E6);
+  alarm($maxt);
 
   my $out = join '', <$shout_fh>;
   close $shout_fh;
   $out .= sprintf("\nRETCODE:0x%02x\n", $?) if $?;
 
-  ualarm(0);
+  alarm(0);
 
   # wait on writer, for tidiness
   while ((my $done = waitpid(-1, WNOHANG)) > 0) {
     warn "something on pid=$done (probably a writer) failed ?=$?" if $?;
+  }
+
+  # remove job control warning (no tty, e.g. under "ssh -T")
+  unless ($raw || -t STDIN) {
+    # XXX: a localisation disaster?
+    $out =~ s{\Abash: no job control in this shell\n}{};
   }
 
   return $out;

@@ -6,7 +6,7 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 15;
+use Test::More tests => 18;
 
 use Time::HiRes qw( gettimeofday tv_interval );
 
@@ -15,9 +15,9 @@ use BashRunner 'bash_interactive';
 
 
 sub main {
-  preconds_tt(); # 9
+  preconds_tt(); # 11
   histzap_tt(); # 2
-  interactiveness_tt(); # 4
+  interactiveness_tt(); # 5
 }
 
 
@@ -25,9 +25,16 @@ sub preconds_tt {
   # see that we're talking to something we understand
   my $bash_version_txt = `bash --version`;
   my ($bash_version) =
-    ($bash_version_txt =~ qr{\bbash\b.* version ([-0-9.]+\S)});
-  like($bash_version, qr{^([3-9]|\d{2,})\.\d+}, # >= v3 is a guess
-       "bash --version: sane and modern-ish");
+    ($bash_version_txt =~ qr{\bbash\b.* version (.*)});
+  like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
+       "bash --version: sane and modern-ish") &&
+	 diag("bash --version: $bash_version");
+
+  # Need HOME for the "history not polluted" check
+  # Need PATH during PATH-munge in later tests
+  foreach my $k (qw( HOME PATH )) {
+    ok(defined $ENV{$k} && $ENV{$k} ne '', "\$$k is set");
+  }
 
   foreach my $k (qw( POSIXLY_CORRECT PROMPT_COMMAND PROMPT_DIRTRIM )) {
     ok(!defined $ENV{$k}, "Bash with \$$k is untested, YMMV");
@@ -76,11 +83,13 @@ sub interactiveness_tt {
      qq{>echo \$PPID\n$$\n>exit\n}, "PPID check");
 
   my $quick_alarm = 0.75; # too quick will cause false fail; slow is tedious
+  diag("alarm test - short delay");
   my $t0 = [gettimeofday()];
   my $ans = eval { bash_interactive("sleep 7", maxt => $quick_alarm) } || $@;
   my $wallclock = tv_interval($t0);
-  like($ans, qr{Timeout.*waiting for}, "ualarm fired (total $wallclock sec)");
-  cmp_ok($wallclock, '>', $quick_alarm * 0.7, 'ualarm waited');
+  like($ans, qr{Timeout.*waiting for}, "alarm fired (total $wallclock sec)");
+  cmp_ok($wallclock, '>', $quick_alarm * 0.7, '  and that alarm waited');
+  cmp_ok($wallclock, '<', $quick_alarm * 5.0, '  but did not wait too long');
 
   local @ENV{qw{ G1 G2 G3 }} =
     ('ABCD goldfish', 'MA goldfish', 'SAR CDBDIs');

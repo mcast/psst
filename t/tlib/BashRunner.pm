@@ -12,10 +12,12 @@ our @EXPORT_OK = qw( bash_interactive );
 # %arg keys
 #   PS1 => set in %ENV
 #   maxt => alarm timeout/sec, default 5
+#   raw => don't strip off job control warning
 sub bash_interactive {
   my ($in, %arg) = @_;
 
   my $maxt = delete $arg{maxt} || 5;
+  my $raw = delete $arg{raw} || 0;
 
   local $ENV{PS1};
   if (defined $arg{PS1}) {
@@ -79,6 +81,12 @@ sub bash_interactive {
   # wait on writer, for tidiness
   while ((my $done = waitpid(-1, WNOHANG)) > 0) {
     warn "something on pid=$done (probably a writer) failed ?=$?" if $?;
+  }
+
+  # remove job control warning (no tty, e.g. under "ssh -T")
+  unless ($raw || -t STDIN) {
+    # XXX: a localisation disaster?
+    $out =~ s{\Abash: no job control in this shell\n}{};
   }
 
   return $out;

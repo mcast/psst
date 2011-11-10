@@ -22,8 +22,8 @@ sub main {
 
 sub prompt_tt {
   local $ENV{HOME} = 't/home-ps1';
-  local $ENV{PS1_FROM_TEST} = 'here> '; # nb. trailing space is lost in bashrc
-  # because we allow absence of that arg
+  local $ENV{PS1_FROM_TEST} = 'here> '; # nb. trailing space is lost
+  # in t/bashrc because we allow absence of that arg
 
   ###  See that we get initialised
   #
@@ -45,23 +45,24 @@ sub prompt_tt {
   $ENV{HOME} = 't/home-substing';
   local $ENV{TERM} = 'ansi'; # else Bash may try to compensate
   $run = qq{. t/bashrc\nPERL_LOCAL_LIB_ROOT=/twang/fump\n};
-  my $out3 = bash_interactive($run);
-  deprompt(\$out3);
+  my $out3 = bash_interactive($run, PS1 => '>>');
   does_qrs(deansi($out3), \@ll_marks, 2, 'out3 (+LL deansi)');
 
   # Hardcoding the output from the ANSI code generator is sure to be a
   # maintenance burden...  change it Later.
-  is($out3, <<"LITERAL", 'out3 (+LL literal)');
-> . t/bashrc
-cfgd> PERL_LOCAL_LIB_ROOT=/twang/fump
-\e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m/twang/fump\e8\e[32mLL)\e[0m cfgd> exit
+  is(Dump($out3), Dump(<<"LITERAL"), 'out3 (+LL literal)');
+>>. t/bashrc
+>>PERL_LOCAL_LIB_ROOT=/twang/fump
+\e7\r\e[3B\e[2K\e[B\e[2Kl:l=\e[32m/twang/fump\e8\e[32mLL)\e[0m >>exit
 LITERAL
+  # Did supply PS1 because we test the whole string, and don't want to
+  # have to strip off local prompt strings.  That PS1 overrides the
+  # config.
 
   # Takes env & does substitution
   local $ENV{PERL_LOCAL_LIB_ROOT} = '/twang/fump:/path/to/stuff';
   $run = qq{. t/bashrc\n\n};
   my $out4 = bash_interactive($run);
-  deprompt(\$out4);
   does_qrs(deansi($out4), \@ll_marks, 2, 'out4 (+LL deansi)');
   like(deansi($out4), qr{^l:l=/twang/fump : PT/stuff$}m, 'out4 (substituted, deansi)');
 }
@@ -158,13 +159,6 @@ sub pidseq_subtest {
   } else {
     return "weird (not unimodal..  not enough trials? system busy?): $raw";
   }
-}
-
-
-sub deprompt {
-  my ($txtref) = @_;
-  # remove Bash's initial unconfigured prompt
-  return $$txtref =~ s{\Abash-[\d.]+\$ }{> };
 }
 
 sub deansi { # removes ANSI/vt100 codes we use

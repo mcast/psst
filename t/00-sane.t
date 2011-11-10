@@ -25,9 +25,10 @@ sub preconds_tt {
   # see that we're talking to something we understand
   my $bash_version_txt = `bash --version`;
   my ($bash_version) =
-    ($bash_version_txt =~ qr{\bbash\b.* version ([-0-9.]+\S)});
-  like($bash_version, qr{^([3-9]|\d{2,})\.\d+}, # >= v3 is a guess
-       "bash --version: sane and modern-ish");
+    ($bash_version_txt =~ qr{\bbash\b.* version (.*)});
+  like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
+       "bash --version: sane and modern-ish") &&
+	 diag("bash --version: $bash_version");
 
   foreach my $k (qw( POSIXLY_CORRECT PROMPT_COMMAND PROMPT_DIRTRIM )) {
     ok(!defined $ENV{$k}, "Bash with \$$k is untested, YMMV");

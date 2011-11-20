@@ -9,6 +9,7 @@ END {
 use Test::More tests => 17;
 
 use File::Spec;
+use Config; # for %Config
 use Time::HiRes qw( gettimeofday tv_interval );
 
 use lib 't/tlib';
@@ -47,12 +48,13 @@ sub preconds_tt {
   is(devino($0), devino('t/00-sane.t'), 'running in there');
 
   # need our built copy on PATH, PERL5LIB
+  my $sep = $Config{path_sep}; # per perlrun(1)
 #  like($ENV{PATH}, qr{^[^:]*blib/script/?(:|$)}, 'our blib on $ENV{PATH}');
 # hardwired above
-  like((join ':', map { __un8xify($_) } @INC),
-       qr{^(t/tlib:)([^:]+/)?blib/lib/?(:|$)},
+  like((join $sep, map { __un8xify($_) } @INC),
+       qr{^(t/tlib$sep)([^$sep]+/)?blib/lib/?($sep|$)},
        'our blib on @INC (munged)'); # t/tlib added by 'use lib' above
-  like(__un8xify((split /:/, $ENV{PERL5LIB})[0]), # first element
+  like(__un8xify((split /$sep/, $ENV{PERL5LIB})[0]), # first element
        qr{(^|/)blib/lib/?$}, 'our blib at front of $ENV{PERL5LIB} (munged)');
 }
 

@@ -2,8 +2,9 @@ package BashRunner;
 use strict;
 use warnings;
 
-use POSIX ":sys_wait_h";
-use Time::HiRes qw( alarm );
+use POSIX qw( :sys_wait_h ceil );
+use Time::HiRes (); # alarm may be used
+require Test::More; # for diag; but we may not import again
 use base 'Exporter';
 
 our @EXPORT_OK = qw( bash_interactive );
@@ -70,13 +71,13 @@ sub bash_interactive {
     kill 'HUP', $rd_pid; # kick the shell on our way out
     die "Timeout(${maxt}s) waiting for @cmd";
   };
-  alarm($maxt);
+  some_alarm($maxt);
 
   my $out = join '', <$shout_fh>;
   close $shout_fh;
   $out .= sprintf("\nRETCODE:0x%02x\n", $?) if $?;
 
-  alarm(0);
+  some_alarm(0);
 
   # wait on writer, for tidiness
   while ((my $done = waitpid(-1, WNOHANG)) > 0) {
@@ -90,6 +91,30 @@ sub bash_interactive {
   }
 
   return $out;
+}
+
+{
+  my $have_hires_alarm = undef;
+
+  sub some_alarm {
+    my ($set) = @_;
+
+    # first time around, see what we have
+    if (!defined $have_hires_alarm) {
+      if (eval { Time::HiRes::aalarm(0); 1 }) {
+	$have_hires_alarm = 1;
+      } else {
+	Test::More::diag("Falling back to integer alarmclock: $@");
+	$have_hires_alarm = 0;
+      }
+    }
+
+    if ($have_hires_alarm) {
+      Time::HiRes::alarm($set);
+    } else {
+      CORE::alarm(ceil($set));
+    }
+  }
 }
 
 1;

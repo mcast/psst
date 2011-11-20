@@ -6,7 +6,7 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 18;
+use Test::More tests => 17;
 
 use Time::HiRes qw( gettimeofday tv_interval );
 
@@ -15,7 +15,7 @@ use BashRunner 'bash_interactive';
 
 
 sub main {
-  preconds_tt(); # 11
+  preconds_tt(); # 10
   histzap_tt(); # 2
   interactiveness_tt(); # 5
 }
@@ -30,9 +30,8 @@ sub preconds_tt {
        "bash --version: sane and modern-ish") &&
 	 diag("bash --version: $bash_version");
 
-  # Need HOME for the "history not polluted" check
   # Need PATH during PATH-munge in later tests
-  foreach my $k (qw( HOME PATH )) {
+  foreach my $k (qw( PATH )) {
     ok(defined $ENV{$k} && $ENV{$k} ne '', "\$$k is set");
   }
 
@@ -55,7 +54,13 @@ sub preconds_tt {
 
 sub histzap_tt {
   # ensure we are not polluting user's history file
-  my $histfn = "$ENV{HOME}/.bash_history";
+  my $home = $ENV{HOME};
+  if (!defined $home # e.g. MSWin32
+      || $home eq '' || !-d $home) {
+    $home = (getpwuid($>))[7];
+    diag("\$HOME invalid, falling back to $home for histzap_tt check");
+  }
+  my $histfn = "$home/.bash_history";
   my $pid = $$;
 
   like(bash_interactive("echo 'disTincTivecanarycommand+$pid from $0'"),

@@ -8,6 +8,7 @@ END {
 }
 use Test::More tests => 17;
 
+use File::Spec;
 use Time::HiRes qw( gettimeofday tv_interval );
 
 use lib 't/tlib';
@@ -48,9 +49,19 @@ sub preconds_tt {
   # need our built copy on PATH, PERL5LIB
 #  like($ENV{PATH}, qr{^[^:]*blib/script/?(:|$)}, 'our blib on $ENV{PATH}');
 # hardwired above
-  like((join ':', @INC), qr{^(t/tlib:)?[^:]*blib/lib/?(:|$)}, 'our blib on @INC');
-  like($ENV{PERL5LIB}, qr{^[^:]*blib/lib/?(:|$)}, 'our blib on $ENV{PERL5LIB}');
+  like((join ':', map { __un8xify($_) } @INC),
+       qr{^(t/tlib:)([^:]+/)?blib/lib/?(:|$)},
+       'our blib on @INC (munged)'); # t/tlib added by 'use lib' above
+  like(__un8xify((split /:/, $ENV{PERL5LIB})[0]), # first element
+       qr{(^|/)blib/lib/?$}, 'our blib at front of $ENV{PERL5LIB} (munged)');
 }
+
+sub __un8xify { # make the path look more like a Un*x one
+  my ($path) = @_;
+  my @path = File::Spec->splitdir($path);
+  return join '/', @path;
+}
+
 
 sub histzap_tt {
   # ensure we are not polluting user's history file

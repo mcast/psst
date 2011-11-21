@@ -101,7 +101,7 @@ sub bash_interactive {
 
     # first time around, see what we have
     if (!defined $have_hires_alarm) {
-      if (eval { Time::HiRes::aalarm(0); 1 }) {
+      if (eval { Time::HiRes::alarm(0); 1 }) {
 	$have_hires_alarm = 1;
       } else {
 	Test::More::diag("Falling back to integer alarmclock: $@");

@@ -3,13 +3,14 @@ use strict;
 use warnings;
 use Test::More tests => 10;
 use YAML 'Dump'; # gives nice \e (etc.) representation of control codes
+use Config; # for %Config
 
 use lib 't/tlib';
 use BashRunner 'bash_interactive';
 
 
 sub main {
-  $ENV{PATH} = "blib/script:$ENV{PATH}"; # not set by prove or Makefile.PL
+  $ENV{PATH} = "blib/script$Config{path_sep}$ENV{PATH}"; # not set by prove or Makefile.PL
 
   # prevent influence from real local::lib
   my @LLvars = qw{PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT MODULEBUILDRC};
@@ -60,7 +61,7 @@ LITERAL
   # config.
 
   # Takes env & does substitution
-  local $ENV{PERL_LOCAL_LIB_ROOT} = '/twang/fump:/path/to/stuff';
+  local $ENV{PERL_LOCAL_LIB_ROOT} = "/twang/fump$Config{path_sep}/path/to/stuff";
   $run = qq{. t/bashrc\n\n};
   my $out4 = bash_interactive($run);
   does_qrs(deansi($out4), \@ll_marks, 2, 'out4 (+LL deansi)');
@@ -88,7 +89,7 @@ sub pidburn_tt {
       if $pidseq =~ /^rand/;
 
     like($pidseq, qr{^sequential=1 }, 'Unconfigured, Bash does not burn PIDs');
-    local $ENV{PERL_LOCAL_LIB_ROOT} = '/path/to/foo:/path/to/bar';
+    local $ENV{PERL_LOCAL_LIB_ROOT} = "/path/to/foo$Config{path_sep}/path/to/bar";
   TODO: {
       local $TODO = 'not implemented in psst(1)';
       like(pidseq_subtest(), qr{^sequential=1 },

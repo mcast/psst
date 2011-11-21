@@ -6,8 +6,10 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 18;
+use Test::More tests => 17;
 
+use File::Spec;
+use Config; # for %Config
 use Time::HiRes qw( gettimeofday tv_interval );
 
 use lib 't/tlib';
@@ -15,7 +17,7 @@ use BashRunner 'bash_interactive';
 
 
 sub main {
-  preconds_tt(); # 11
+  preconds_tt(); # 10
   histzap_tt(); # 2
   interactiveness_tt(); # 5
 }
@@ -30,9 +32,8 @@ sub preconds_tt {
        "bash --version: sane and modern-ish") &&
 	 diag("bash --version: $bash_version");
 
-  # Need HOME for the "history not polluted" check
   # Need PATH during PATH-munge in later tests
-  foreach my $k (qw( HOME PATH )) {
+  foreach my $k (qw( PATH )) {
     ok(defined $ENV{$k} && $ENV{$k} ne '', "\$$k is set");
   }
 
@@ -47,15 +48,32 @@ sub preconds_tt {
   is(devino($0), devino('t/00-sane.t'), 'running in there');
 
   # need our built copy on PATH, PERL5LIB
+  my $sep = $Config{path_sep}; # per perlrun(1)
 #  like($ENV{PATH}, qr{^[^:]*blib/script/?(:|$)}, 'our blib on $ENV{PATH}');
 # hardwired above
-  like((join ':', @INC), qr{^(t/tlib:)?[^:]*blib/lib/?(:|$)}, 'our blib on @INC');
-  like($ENV{PERL5LIB}, qr{^[^:]*blib/lib/?(:|$)}, 'our blib on $ENV{PERL5LIB}');
+  like((join $sep, map { __un8xify($_) } @INC),
+       qr{^(t/tlib$sep)([^$sep]+/)?blib/lib/?($sep|$)},
+       'our blib on @INC (munged)'); # t/tlib added by 'use lib' above
+  like(__un8xify((split /$sep/, $ENV{PERL5LIB})[0]), # first element
+       qr{(^|/)blib/lib/?$}, 'our blib at front of $ENV{PERL5LIB} (munged)');
 }
+
+sub __un8xify { # make the path look more like a Un*x one
+  my ($path) = @_;
+  my @path = File::Spec->splitdir($path);
+  return join '/', @path;
+}
+
 
 sub histzap_tt {
   # ensure we are not polluting user's history file
-  my $histfn = "$ENV{HOME}/.bash_history";
+  my $home = $ENV{HOME};
+  if (!defined $home # e.g. MSWin32
+      || $home eq '' || !-d $home) {
+    $home = (getpwuid($>))[7];
+    diag("\$HOME invalid, falling back to $home for histzap_tt check");
+  }
+  my $histfn = "$home/.bash_history";
   my $pid = $$;
 
   like(bash_interactive("echo 'disTincTivecanarycommand+$pid from $0'"),

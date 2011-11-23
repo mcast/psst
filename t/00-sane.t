@@ -25,9 +25,9 @@ sub main {
 
 sub preconds_tt {
   # see that we're talking to something we understand
-  my $bash_version_txt = `bash --version`;
+  my $bash_version_txt = `bash -c 'echo \$BASH_VERSION'`;
   my ($bash_version) =
-    ($bash_version_txt =~ qr{\bbash\b.* version (.*)});
+    ($bash_version_txt =~ qr{(\d+\.\d+\.\d+)});
   like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
        "bash --version: sane and modern-ish") &&
 	 diag("bash --version: $bash_version");

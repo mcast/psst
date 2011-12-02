@@ -85,8 +85,10 @@ sub pidburn_tt {
   # does Bash burn pids?
  SKIP: {
     my $pidseq = pidseq_subtest();
-    skip 'pid allocation appears to be randomised', 3
-      if $pidseq =~ /^rand/;
+    my $skip;
+    $skip = 'pid allocation appears to be randomised' if $pidseq =~ /^rand/;
+    diag($skip) if $skip; # I want to see this skip in smoketests
+    skip $skip, 3 if $skip;
 
     like($pidseq, qr{^sequential=1 }, 'Unconfigured, Bash does not burn PIDs');
     local $ENV{PERL_LOCAL_LIB_ROOT} = "/path/to/foo$Config{path_sep}/path/to/bar";
@@ -114,7 +116,9 @@ sub pidburn_tt {
 # PID wrap should not cause problems.  Fast PID churn from other
 # sources might require larger $N to get non-weird results.
 sub pidseq_subtest {
-  my $N = 50;
+  my ($N) = @_;
+  my $retrying = defined $N;
+  $N ||= 50;
 
   # print many prompts, examine pid issued to the process requested
   my $run = ". t/bashrc\n".("perl -e 'print qq{pid:\$\$\\n}'\n" x $N);
@@ -158,7 +162,12 @@ sub pidseq_subtest {
     my $type = { 1 => 'sequential', 2 => 'promptburn' }->{$diff} || 'weird';
     return "$type=$raw";
   } else {
-    return "weird (not unimodal..  not enough trials? system busy?): $raw";
+    if ($retrying) {
+      return "weird (not unimodal..  not enough trials? system busy?): $raw";
+    } else {
+      diag("weird pidseq ($raw) - going to try harder");
+      return pidseq_subtest($N * 10);
+    }
   }
 }
 

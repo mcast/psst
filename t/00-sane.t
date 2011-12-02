@@ -6,7 +6,7 @@ END {
   # must be before Test::More's END blocks
   BAIL_OUT('Sanity checks failed') if $?;
 }
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 use File::Spec;
 use Config; # for %Config
@@ -17,21 +17,33 @@ use BashRunner 'bash_interactive';
 
 
 sub main {
-  preconds_tt(); # 10
-  histzap_tt(); # 2
-  interactiveness_tt(); # 5
+  my $have_bash = has_bash_tt(); # 2
+  preconds_tt(); # 9
+
+ SKIP: {
+    skip "No Bash -- give up", 7 unless $have_bash;
+
+    histzap_tt(); # 2
+    interactiveness_tt(); # 5
+  }
 }
 
 
-sub preconds_tt {
+sub has_bash_tt {
   # see that we're talking to something we understand
-  my $bash_version_txt = `bash -c 'echo \$BASH_VERSION'`;
-  my ($bash_version) =
-    ($bash_version_txt =~ qr{(\d+\.\d+\.\d+)});
-  like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
-       "bash --version: sane and modern-ish") &&
-	 diag("bash --version: $bash_version");
+  my $bash_version = `bash -c 'echo \$BASH_VERSION'`;
+  chomp $bash_version;
 
+  my $present = ok($bash_version ne '', 'Bash is installed');
+
+  like($bash_version, qr{^([2-9]|\d{2,})\.\d+}, # >= v2 is a guess
+       "bash --version: sane and modern-ish")
+    && diag("bash --version: $bash_version");
+
+  return $present;
+}
+
+sub preconds_tt {
   # Need PATH during PATH-munge in later tests
   foreach my $k (qw( PATH )) {
     ok(defined $ENV{$k} && $ENV{$k} ne '', "\$$k is set");
